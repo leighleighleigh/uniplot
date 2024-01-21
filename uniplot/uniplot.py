@@ -58,8 +58,21 @@ def plot(ys: Any, xs: Optional[Any] = None, **kwargs) -> None:
             print(line)
 
         if options.interactive:
-            print("Move h/j/k/l, zoom u/n, or r to reset. ESC/q to quit")
-            key_pressed = getch().lower()
+            print("Move h/j/k/l, zoom u/n, zoom-y K/J, zoom-x H/L, or r to reset. ESC/q to quit")
+            key_pressed = getch()
+
+            # check case-sensitive keys for zooming
+            if key_pressed == "K":
+                options.zoom_in_y()
+            elif key_pressed == "J":
+                options.zoom_out_y()
+            elif key_pressed == "L":
+                options.zoom_in_x()
+            elif key_pressed == "H":
+                options.zoom_out_x()
+
+            # check case-insensitive keys for shifting
+            key_pressed = key_pressed.lower()
 
             if key_pressed == "h":
                 options.shift_view_left()
