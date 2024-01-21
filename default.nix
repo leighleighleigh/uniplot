@@ -10,10 +10,10 @@ let
   devpkgs = import <nixpkgs> {
     overlays = [ (import "${poetry2nix.outPath}/overlay.nix") ];
   };
-in devpkgs.poetry2nix.mkPoetryEditablePackages {
+in devpkgs.poetry2nix.mkPoetryPackages {
     projectDir = ./.;
     preferWheels = true;
     editablePackageSources = {
         uniplot = ./.;
-    }
+    };
 }
