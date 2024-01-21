@@ -1,4 +1,5 @@
-#!/bin/zsh
+#! /usr/bin/env nix-shell
+#! nix-shell -p zsh -i zsh
 
 # Script to run all tests, like a local CI pipeline
 
