@@ -28,20 +28,25 @@ class MultiSeries:
         else:
             self.ys = [_cast_as_numpy_floats(ys)]
 
-        # Initialize x series, first checking if it is a datetime-ish series
-        self.x_is_timeseries: bool = _is_timeseries_ish(xs)
+        self.x_is_timeseries: bool = False
 
+        # Initialize x series
         if xs is None:
             self.xs = [
                 np.arange(1, len(ys_row) + 1, step=1, dtype=int) for ys_row in self.ys
             ]
         else:
             if self.is_multi_dimensional:
+                # check if all x series are timeseries
+                self.x_is_timeseries = all([_is_timeseries_ish(x) for x in xs])
+
                 if self.x_is_timeseries:
                     self.xs = [_convert_timeseries_to_numpy(xs_row) for xs_row in xs]
                 else:
                     self.xs = [_cast_as_numpy_floats(xs_row) for xs_row in xs]
             else:
+                self.x_is_timeseries = _is_timeseries_ish(xs)
+
                 if self.x_is_timeseries:
                     self.xs = [_convert_timeseries_to_numpy(xs)]
                 else:
@@ -132,8 +137,7 @@ def _convert_timeseries_to_numpy(series) -> NDArray:
         series = pd.to_datetime(series.to_series())
     elif isinstance(series, list):
         series = pd.to_datetime(pd.Series(series))
-    
-    # then, convert each Timestamp to a unix epoch timestamp
+
     series = series.astype(np.int64) // 10 ** 9
 
     # finally, convert to numpy array
