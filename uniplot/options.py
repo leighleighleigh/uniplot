@@ -78,6 +78,18 @@ class Options:
     def zoom_out(self) -> None:
         self.__zoom_view(factor=-1)
 
+    def zoom_in_x(self) -> None:
+        self.__zoom_view(factor=1,y=False)
+
+    def zoom_out_x(self) -> None:
+        self.__zoom_view(factor=-1,y=False)
+
+    def zoom_in_y(self) -> None:
+        self.__zoom_view(factor=1,x=False)
+
+    def zoom_out_y(self) -> None:
+        self.__zoom_view(factor=-1,x=False)
+
     def reset_view(self) -> None:
         (self.x_min, self.x_max, self.y_min, self.y_max) = self._initial_bounds
 
@@ -100,11 +112,13 @@ class Options:
         self.y_min = self.y_min + step
         self.y_max = self.y_max + step
 
-    def __zoom_view(self, factor: int) -> None:
-        step = 0.1 * factor * (self.x_max - self.x_min)
-        self.x_min = self.x_min + step
-        self.x_max = self.x_max - step
+    def __zoom_view(self, factor: int, x: bool = True, y:bool = True) -> None:
+        if x:
+            step = 0.1 * factor * (self.x_max - self.x_min)
+            self.x_min = self.x_min + step
+            self.x_max = self.x_max - step
 
-        step = 0.1 * factor * (self.y_max - self.y_min)
-        self.y_min = self.y_min + step
-        self.y_max = self.y_max - step
+        if y:
+            step = 0.1 * factor * (self.y_max - self.y_min)
+            self.y_min = self.y_min + step
+            self.y_max = self.y_max - step

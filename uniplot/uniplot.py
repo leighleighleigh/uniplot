@@ -6,6 +6,7 @@ from uniplot.multi_series import MultiSeries
 from uniplot.options import Options
 import uniplot.layer_assembly as layer_assembly
 import uniplot.plot_elements as elements
+from uniplot.getch import getch
 from uniplot.param_initializer import validate_and_transform_options
 from uniplot.axis_labels.extended_talbot_labels import extended_talbot_labels
 
@@ -55,6 +56,41 @@ def plot(ys: Any, xs: Optional[Any] = None, **kwargs) -> None:
             x_axis_labels, y_axis_labels, pixel_character_matrix, options
         ):
             print(line)
+
+        if options.interactive:
+            print("Move h/j/k/l, zoom u/n, zoom-y K/J, zoom-x H/L, or r to reset. ESC/q to quit")
+            key_pressed = getch()
+
+            # check case-sensitive keys for zooming
+            if key_pressed == "K":
+                options.zoom_in_y()
+            elif key_pressed == "J":
+                options.zoom_out_y()
+            elif key_pressed == "L":
+                options.zoom_in_x()
+            elif key_pressed == "H":
+                options.zoom_out_x()
+
+            # check case-insensitive keys for shifting
+            key_pressed = key_pressed.lower()
+
+            if key_pressed == "h":
+                options.shift_view_left()
+            elif key_pressed == "l":
+                options.shift_view_right()
+            elif key_pressed == "j":
+                options.shift_view_down()
+            elif key_pressed == "k":
+                options.shift_view_up()
+            elif key_pressed == "u":
+                options.zoom_in()
+            elif key_pressed == "n":
+                options.zoom_out()
+            elif key_pressed == "r":
+                options.reset_view()
+            elif key_pressed in ["q", "\x1b"]:
+                # q and Escape will end interactive mode
+                continue_looping = False
 
             loop_iteration += 1
 
