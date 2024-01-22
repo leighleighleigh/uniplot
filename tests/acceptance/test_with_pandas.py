@@ -5,7 +5,7 @@ it works nicely with uniplot. Thus these tests.
 
 import pandas as pd  # type: ignore
 import numpy as np  # type: ignore
-
+import datetime 
 from uniplot import plot
 
 
@@ -62,3 +62,16 @@ def test_grouped_plotting():
         y_unit=" g",
         lines=True,
     )
+
+
+def test_datetime_plotting():
+    N = 100
+    x = pd.date_range("2024-01-22", periods=N, freq="H")
+    y = np.sin(np.linspace(0, 5 * np.pi, N))*np.cos(np.linspace(0, 7 * np.pi, N))
+
+    data = pd.DataFrame({
+        "x": x,
+        "y": y
+    })
+
+    plot(xs=data["x"], ys=data["y"], lines=True)

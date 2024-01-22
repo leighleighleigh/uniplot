@@ -18,6 +18,8 @@ def extended_talbot_labels(
     vertical_direction: bool = False,
     unit: str = "",
     log: bool = False,
+    timeseries: bool = False,
+    timeseries_format: str = "%Y-%m-%d",
     verbose: bool = False,
 ) -> Optional[LabelSet]:
     """
@@ -75,6 +77,8 @@ def extended_talbot_labels(
                     unit=unit,
                     log=log,
                     vertical_direction=vertical_direction,
+                    timeseries=timeseries,
+                    timeseries_format=timeseries_format
                 )
 
                 grid_alignment = int(

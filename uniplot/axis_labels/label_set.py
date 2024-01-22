@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import List
+import pendulum
 
 from uniplot.discretizer import discretize, discretize_array
 
@@ -21,6 +22,8 @@ class LabelSet:
         unit: str = "",
         log: bool = False,
         vertical_direction: bool = False,
+        timeseries: bool = False,
+        timeseries_format: str = "%Y-%m-%d",
     ):
         self.labels: NDArray = labels
         self.x_min = x_min
@@ -29,6 +32,8 @@ class LabelSet:
         self.log = log
         self.available_space = available_space
         self.vertical_direction = vertical_direction
+        self.timeseries = timeseries
+        self.timeseries_format = timeseries_format
         self._results_already_in_cache: bool = False
         self._rendered_result: List[str] = []
         self._render_does_overlap: bool = False
@@ -55,7 +60,10 @@ class LabelSet:
         if self._results_already_in_cache:
             return
 
-        str_labels = self._find_shortest_string_representation(self.labels)
+        if not self.timeseries:
+            str_labels = self._find_shortest_string_representation(self.labels)
+        else:
+            str_labels = self._format_timeseries_labels(self.labels)
 
         if self.vertical_direction:
             # So this is for the y axis case
@@ -122,6 +130,16 @@ class LabelSet:
             self._rendered_result = [line]
         self._results_already_in_cache = True
 
+    def _format_timeseries_labels(self, numbers: NDArray) -> List[str]:
+        """
+        Uses self.timeseries_format to format the labels.
+        The numbers are numpy.datetime64 values.
+        Uses pendulum for formatting.
+        """
+        return [
+            pendulum.from_timestamp(n).strftime(self.timeseries_format) for n in numbers
+        ]
+
     def _find_shortest_string_representation(
         self,
         numbers: NDArray,
@@ -170,3 +188,4 @@ class LabelSet:
 
     def _compute_spacing_of_indices_is_regular(self, indices: NDArray) -> bool:
         return len(np.unique(np.diff(indices))) == 1
+    
