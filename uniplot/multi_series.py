@@ -1,6 +1,9 @@
 import numpy as np
 from numpy.typing import NDArray
 
+import datetime
+import pendulum
+import pandas as pd
 from typing import List
 
 
@@ -25,6 +28,8 @@ class MultiSeries:
         else:
             self.ys = [_cast_as_numpy_floats(ys)]
 
+        self.x_is_timeseries: bool = False
+
         # Initialize x series
         if xs is None:
             self.xs = [
@@ -32,9 +37,20 @@ class MultiSeries:
             ]
         else:
             if self.is_multi_dimensional:
-                self.xs = [_cast_as_numpy_floats(xs_row) for xs_row in xs]
+                # check if all x series are timeseries
+                self.x_is_timeseries = all([_is_timeseries_ish(x) for x in xs])
+
+                if self.x_is_timeseries:
+                    self.xs = [_convert_timeseries_to_numpy(xs_row) for xs_row in xs]
+                else:
+                    self.xs = [_cast_as_numpy_floats(xs_row) for xs_row in xs]
             else:
-                self.xs = [_cast_as_numpy_floats(xs)]
+                self.x_is_timeseries = _is_timeseries_ish(xs)
+
+                if self.x_is_timeseries:
+                    self.xs = [_convert_timeseries_to_numpy(xs)]
+                else:
+                    self.xs = [_cast_as_numpy_floats(xs)]
 
     def __len__(self) -> int:
         """Return the number of time series."""
@@ -45,7 +61,12 @@ class MultiSeries:
         return [len(ys_row) for ys_row in self.ys]
 
     def set_x_axis_to_log10(self) -> None:
-        """Apply log10 to all x series."""
+        """Apply log10 to all x series.
+        Raises a `ValueError` if any the x-axis is timeseries.
+        """
+        if self.x_is_timeseries:
+            raise ValueError("Cannot format a timeseries as logarithmic.")
+
         self.xs = [_safe_log10(x) for x in self.xs]
 
     def set_y_axis_to_log10(self) -> None:
@@ -84,6 +105,45 @@ def _is_multi_dimensional(series) -> bool:
         return True
 
 
+def _is_timeseries_ish(series) -> bool:
+    """
+    Check if the object is datetime-like.
+    This might be a pandas DateTime, a list of datetimes, or a list of date(s).
+    """
+    if isinstance(series, pd.DatetimeIndex):
+        return True
+    elif isinstance(series, pd.Series):
+        return series.dtype == 'datetime64[ns]'
+    elif isinstance(series, list):
+        if all(isinstance(x, datetime.date) for x in series):
+            return True
+        elif all(isinstance(x, datetime.datetime) for x in series):
+            return True
+        elif isinstance(series, pendulum.DateTime):
+            return True
+
+    return False
+
+
+def _convert_timeseries_to_numpy(series) -> NDArray:
+    """
+    Converts to a numpy floating-point array, of unix epoch timestamps,
+    with nano-second precision.
+    """
+    # first, convert to pandas datetime
+    if isinstance(series, pd.Series):
+        series = pd.to_datetime(series)
+    elif isinstance(series, pd.DatetimeIndex):
+        series = pd.to_datetime(series.to_series())
+    elif isinstance(series, list):
+        series = pd.to_datetime(pd.Series(series))
+
+    series = series.astype(np.int64) // 10 ** 9
+
+    # finally, convert to numpy array
+    return series.values
+
+
 def _cast_as_numpy_floats(array) -> NDArray:
     """
     Attempts to make a numeric NumPy array from enumerable input.
@@ -93,8 +153,10 @@ def _cast_as_numpy_floats(array) -> NDArray:
     it as NumPy float.
     """
     numpy_array = np.array(array)
+
     if np.issubdtype(numpy_array.dtype, np.inexact):
         return numpy_array
+
     # If it not already intitializes as a numeric type, then all we can do is
     # attempt to cast to float (including NaNs)
     return numpy_array.astype(float)

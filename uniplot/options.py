@@ -42,6 +42,8 @@ class Options:
     y_as_log: bool = False
     # Units of x axis
     x_unit: str = ""
+    # Format string for timeseries values
+    timeseries_format: str = "%Y-%m-%d"
     # Horizontal gridlines
     y_gridlines: List[float] = field(default_factory=_default_gridlines)
     # Maximum y value of the current view

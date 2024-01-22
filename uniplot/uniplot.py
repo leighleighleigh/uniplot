@@ -249,6 +249,8 @@ def _generate_body_raw_elements(
         unit=options.x_unit,
         log=options.x_as_log,
         vertical_direction=False,
+        timeseries=series.x_is_timeseries,
+        timeseries_format=options.timeseries_format,
     )
     x_axis_labels = ""
     if x_axis_label_set is not None:
