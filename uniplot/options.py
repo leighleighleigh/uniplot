@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
+from os import get_terminal_size
 
 
 def _default_gridlines() -> List[float]:
@@ -10,6 +11,22 @@ def _default_lines() -> List[bool]:
     return [False]
 
 
+def _default_width() -> int:
+    try:
+        width = get_terminal_size().columns
+        return max(10, width - 10)
+    except:
+        return 60
+
+
+def _default_height() -> int:
+    try:
+        height = get_terminal_size().lines
+        return max(10, height - 6)
+    except:
+        return 17
+
+
 @dataclass
 class Options:
     # Color mode
@@ -17,7 +34,7 @@ class Options:
     # Force ASCII characters for plotting only
     force_ascii: bool = False
     # Height of the plotting region, in lines
-    height: int = 17
+    height: int = field(default_factory=_default_height)
     # Interactive mode
     interactive: bool = False
     # Labels for the series
@@ -29,7 +46,7 @@ class Options:
     # Title of the plot
     title: Optional[str] = None
     # Width of the plotting region, in characters
-    width: int = 60
+    width: int = field(default_factory=_default_width)
     # Plot x axis with log scale
     x_as_log: bool = False
     # Vertical gridlines
@@ -81,16 +98,16 @@ class Options:
         self.__zoom_view(factor=-1)
 
     def zoom_in_x(self) -> None:
-        self.__zoom_view(factor=1,y=False)
+        self.__zoom_view(factor=1, y=False)
 
     def zoom_out_x(self) -> None:
-        self.__zoom_view(factor=-1,y=False)
+        self.__zoom_view(factor=-1, y=False)
 
     def zoom_in_y(self) -> None:
-        self.__zoom_view(factor=1,x=False)
+        self.__zoom_view(factor=1, x=False)
 
     def zoom_out_y(self) -> None:
-        self.__zoom_view(factor=-1,x=False)
+        self.__zoom_view(factor=-1, x=False)
 
     def reset_view(self) -> None:
         (self.x_min, self.x_max, self.y_min, self.y_max) = self._initial_bounds
@@ -114,7 +131,7 @@ class Options:
         self.y_min = self.y_min + step
         self.y_max = self.y_max + step
 
-    def __zoom_view(self, factor: int, x: bool = True, y:bool = True) -> None:
+    def __zoom_view(self, factor: int, x: bool = True, y: bool = True) -> None:
         if x:
             step = 0.1 * factor * (self.x_max - self.x_min)
             self.x_min = self.x_min + step
