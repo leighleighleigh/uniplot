@@ -22,7 +22,7 @@ def _default_width() -> int:
 def _default_height() -> int:
     try:
         height = get_terminal_size().lines
-        return max(10, height - 4)
+        return max(10, height - 6)
     except:
         return 17
 
